@@ -1,0 +1,35 @@
+name: Aktualizace RSS RIBAJ
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Bude se spouštět v 8:00 ráno našeho času
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stažení kódu
+        uses: actions/checkout@v4
+
+      - name: Příprava Pythonu
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalace knihoven
+        run: pip install -r requirements.txt
+
+      - name: Spuštění skriptu
+        run: python scraper.py
+
+      - name: Uložení vygenerovaného RSS
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add feed.xml
+          git diff-index --quiet HEAD || git commit -m "Automatická aktualizace RSS"
+          git push
